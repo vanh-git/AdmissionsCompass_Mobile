@@ -53,6 +53,7 @@ class _AppRootState extends State<AppRoot> {
 
   Future<void> _loadOnboardingState() async {
     final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
     setState(() {
       _showOnboarding = prefs.getBool('hasSeenOnboarding') != true;
       _isReady = true;
@@ -62,6 +63,7 @@ class _AppRootState extends State<AppRoot> {
   Future<void> _completeOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('hasSeenOnboarding', true);
+    if (!mounted) return;
     setState(() {
       _showOnboarding = false;
     });

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../context/auth_provider.dart';
@@ -25,17 +26,58 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  String getAuthErrorMessage(String message) {
-    if (message.contains('already')) {
-      return 'Email này đã được sử dụng. Vui lòng đăng nhập.';
+  String getAuthErrorMessage(Object error) {
+    if (error is FirebaseAuthException) {
+      switch (error.code) {
+        case 'invalid-credential':
+        case 'user-not-found':
+        case 'wrong-password':
+          return 'Email hoặc mật khẩu không chính xác.';
+        case 'email-already-in-use':
+          return 'Email này đã được sử dụng. Vui lòng đăng nhập.';
+        case 'weak-password':
+          return 'Mật khẩu phải có ít nhất 6 ký tự.';
+        case 'invalid-email':
+          return 'Email không đúng định dạng.';
+        case 'user-disabled':
+          return 'Tài khoản này đã bị vô hiệu hóa.';
+        case 'too-many-requests':
+          return 'Bạn thử đăng nhập quá nhiều lần. Vui lòng đợi một lúc.';
+        case 'network-request-failed':
+          return 'Không thể kết nối Firebase. Hãy kiểm tra mạng.';
+        case 'popup-closed-by-user':
+        case 'cancelled-popup-request':
+          return 'Bạn đã đóng cửa sổ đăng nhập Google.';
+        case 'popup-blocked':
+          return 'Trình duyệt đang chặn cửa sổ đăng nhập Google.';
+        case 'account-exists-with-different-credential':
+          return 'Email này đã đăng ký bằng một phương thức khác.';
+        case 'operation-not-allowed':
+          return 'Đăng nhập Google chưa được bật trong Firebase Console.';
+      }
     }
-    if (message.contains('password')) {
-      return 'Mật khẩu phải có ít nhất 6 ký tự.';
+    return 'Không thể đăng nhập lúc này. Vui lòng thử lại.';
+  }
+
+  Future<void> handleGoogleSignIn() async {
+    setState(() {
+      error = '';
+      loading = true;
+    });
+
+    try {
+      await context.read<AuthProvider>().signInWithGoogle();
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          error = getAuthErrorMessage(e);
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() => loading = false);
+      }
     }
-    if (message.contains('invalid')) {
-      return 'Email không đúng định dạng.';
-    }
-    return 'Lỗi xác thực. Vui lòng thử lại.';
   }
 
   Future<void> handleSubmit() async {
@@ -82,9 +124,11 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } catch (e) {
-      setState(() {
-        error = getAuthErrorMessage(e.toString());
-      });
+      if (mounted) {
+        setState(() {
+          error = getAuthErrorMessage(e);
+        });
+      }
     } finally {
       if (mounted) {
         setState(() => loading = false);
@@ -246,6 +290,41 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             )
                           : Text(isLogin ? 'Đăng nhập' : 'Đăng ký'),
+                    ),
+                    const SizedBox(height: 18),
+                    const Row(
+                      children: [
+                        Expanded(child: Divider()),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 12),
+                          child: Text(
+                            'hoặc',
+                            style: TextStyle(color: Color(0xFF6B7280)),
+                          ),
+                        ),
+                        Expanded(child: Divider()),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF111827),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        side: const BorderSide(color: Color(0xFFD1D5DB)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: loading ? null : handleGoogleSignIn,
+                      icon: const Text(
+                        'G',
+                        style: TextStyle(
+                          color: Color(0xFF4285F4),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      label: const Text('Tiếp tục với Google'),
                     ),
                   ],
                 ),

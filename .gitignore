@@ -1,6 +1,7 @@
 # Miscellaneous
 *.class
 *.log
+flutter-web*.log
 *.pyc
 *.swp
 .DS_Store
@@ -32,6 +33,7 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+/.tools/
 
 # Symbolication related
 app.*.symbols
