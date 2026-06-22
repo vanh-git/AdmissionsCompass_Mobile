@@ -7,6 +7,7 @@ import 'firebase_options.dart';
 import 'screens/bottom_navigation.dart';
 import 'screens/login_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'theme/app_colors.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,10 +25,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Admissions Compass',
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF059669)),
-        ),
+        theme: AppTheme.light,
         home: const AppRoot(),
       ),
     );

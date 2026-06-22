@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
+
 class NumerologyScreen extends StatefulWidget {
   const NumerologyScreen({super.key});
 
@@ -8,9 +10,9 @@ class NumerologyScreen extends StatefulWidget {
 }
 
 class _NumerologyScreenState extends State<NumerologyScreen> {
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _dobController = TextEditingController();
-  String _result = '';
+  final _nameController = TextEditingController();
+  final _dobController = TextEditingController();
+  int? _number;
 
   @override
   void dispose() {
@@ -19,118 +21,167 @@ class _NumerologyScreenState extends State<NumerologyScreen> {
     super.dispose();
   }
 
-  void _calculateNumerology() {
+  void _calculate() {
     final name = _nameController.text.trim();
-    final dob = _dobController.text.trim();
-    if (name.isEmpty || dob.isEmpty) {
-      setState(() {
-        _result = 'Vui lòng nhập họ tên và ngày sinh để xem kết quả.';
-      });
+    if (name.isEmpty || _dobController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Hãy nhập họ tên và ngày sinh của bạn.')),
+      );
       return;
     }
-
-    final sum = name.toUpperCase().runes.fold<int>(0, (value, code) {
-      if (code >= 65 && code <= 90) {
-        return value + ((code - 65) % 9) + 1;
-      }
-      return value;
-    });
-    final lifePath = sum % 9 == 0 ? 9 : sum % 9;
-
-    setState(() {
-      _result =
-          'Số đường đời của bạn là $lifePath.\n'
-          'Số này gợi ý: ${_numerologyMeaning(lifePath)}';
-    });
+    final sum = name.toUpperCase().runes.fold<int>(
+      0,
+      (value, code) =>
+          code >= 65 && code <= 90 ? value + ((code - 65) % 9) + 1 : value,
+    );
+    setState(() => _number = sum % 9 == 0 ? 9 : sum % 9);
   }
 
-  String _numerologyMeaning(int number) {
-    switch (number) {
-      case 1:
-        return 'Lãnh đạo, độc lập, quyết đoán.';
-      case 2:
-        return 'Hòa nhã, hợp tác, nhạy cảm.';
-      case 3:
-        return 'Sáng tạo, giao tiếp, nhiệt huyết.';
-      case 4:
-        return 'Ổn định, kỷ luật, thực tế.';
-      case 5:
-        return 'Tự do, phiêu lưu, linh hoạt.';
-      case 6:
-        return 'Trách nhiệm, chăm sóc, gia đình.';
-      case 7:
-        return 'Sâu sắc, trực giác, phân tích.';
-      case 8:
-        return 'Tham vọng, quản lý, hiệu quả.';
-      case 9:
-        return 'Nhân ái, lý tưởng, vị tha.';
-      default:
-        return 'Khám phá thêm về con số của bạn.';
-    }
-  }
+  String _meaning(int number) => const {
+    1: 'Độc lập, chủ động và có tố chất dẫn dắt.',
+    2: 'Tinh tế, biết lắng nghe và giàu tinh thần hợp tác.',
+    3: 'Sáng tạo, giàu năng lượng và có khả năng truyền cảm hứng.',
+    4: 'Kỷ luật, thực tế và đáng tin cậy.',
+    5: 'Linh hoạt, yêu tự do và thích trải nghiệm.',
+    6: 'Quan tâm, trách nhiệm và luôn muốn chăm sóc mọi người.',
+    7: 'Sâu sắc, ham học hỏi và có tư duy phân tích.',
+    8: 'Tham vọng, quyết đoán và có năng lực quản lý.',
+    9: 'Nhân ái, lý tưởng và luôn hướng đến cộng đồng.',
+  }[number]!;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Thần số học')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Thần số học',
-              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Nhập tên và ngày sinh để khám phá con số định mệnh của bạn.',
-              style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
-            ),
-            const SizedBox(height: 24),
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Họ và tên',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _dobController,
-              decoration: const InputDecoration(
-                labelText: 'Ngày sinh (dd/mm/yyyy)',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.datetime,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: const Color(0xFF059669),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+      appBar: AppBar(title: const Text('Khám phá thần số')),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              children: [
+                AppCard(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF7C3AED), Color(0xFFEC4899)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.auto_awesome, color: Colors.white, size: 42),
+                      SizedBox(width: 18),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Con số kể gì về bạn?',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 23,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            SizedBox(height: 6),
+                            Text(
+                              'Một trải nghiệm vui để hiểu thêm về điểm mạnh và phong cách của chính mình.',
+                              style: TextStyle(
+                                color: Color(0xFFFCE7F3),
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              onPressed: _calculateNumerology,
-              child: const Text('Tính toán ngay'),
+                const SizedBox(height: 18),
+                AppCard(
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: _nameController,
+                        textCapitalization: TextCapitalization.words,
+                        decoration: const InputDecoration(
+                          labelText: 'Họ và tên',
+                          prefixIcon: Icon(Icons.person_outline),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      TextField(
+                        controller: _dobController,
+                        keyboardType: TextInputType.datetime,
+                        decoration: const InputDecoration(
+                          labelText: 'Ngày sinh (dd/mm/yyyy)',
+                          prefixIcon: Icon(Icons.cake_outlined),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: _calculate,
+                          icon: const Icon(Icons.bolt),
+                          label: const Text('Khám phá ngay'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (_number != null) ...[
+                  const SizedBox(height: 18),
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0.7, end: 1),
+                    duration: const Duration(milliseconds: 450),
+                    curve: Curves.elasticOut,
+                    builder: (context, value, child) =>
+                        Transform.scale(scale: value, child: child),
+                    child: AppCard(
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 92,
+                            height: 92,
+                            decoration: const BoxDecoration(
+                              gradient: AppColors.heroGradient,
+                              shape: BoxShape.circle,
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              '$_number',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 42,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Con số nổi bật của bạn',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _meaning(_number!),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              height: 1.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
-            const SizedBox(height: 24),
-            if (_result.isNotEmpty)
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFE5E7EB)),
-                ),
-                child: Text(
-                  _result,
-                  style: const TextStyle(fontSize: 15, height: 1.6),
-                ),
-              ),
-          ],
+          ),
         ),
       ),
     );
