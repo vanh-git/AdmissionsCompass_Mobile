@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:addmissioncompass_mobile/data/riasec_careers.dart';
 import 'package:addmissioncompass_mobile/data/riasec_questions.dart';
 import 'package:addmissioncompass_mobile/models/chat_message.dart';
+import 'package:addmissioncompass_mobile/services/numerology_service.dart';
 
 void main() {
   test('calculateScores groups answers by RIASEC type', () {
@@ -82,5 +83,25 @@ void main() {
       formatChatTime(DateTime(2026, 6, 21, 9, 5), now: now),
       '21/06 09:05',
     );
+  });
+
+  test('numerology reduction preserves master numbers', () {
+    expect(NumerologyService.reduce(29), 11);
+    expect(NumerologyService.reduce(22), 22);
+    expect(NumerologyService.reduce(33), 33);
+    expect(NumerologyService.reduce(38), 11);
+  });
+
+  test('numerology calculates date and Vietnamese name indicators', () {
+    final result = NumerologyService.calculate(
+      'Nguyễn Văn An',
+      DateTime(2004, 11, 29),
+    );
+
+    expect(result.lifePath, 1);
+    expect(result.birthday, 11);
+    expect(result.attitude, 22);
+    expect(result.destiny, isIn(<int>[1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 22, 33]));
+    expect(NumerologyService.normalizeVietnamese('Đặng Thị Mỹ'), 'dangthimy');
   });
 }
